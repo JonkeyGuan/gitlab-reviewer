@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab-reviewer
+  labels:
+    app: gitlab-reviewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitlab-reviewer
+  template:
+    metadata:
+      labels:
+        app: gitlab-reviewer
+    spec:
+      containers:
+      - name: gitlab-reviewer
+        image: quay.io/jonkey/gitlab-reviewer:1.0
+        ports:
+        - containerPort: 3000
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab-reviewer
+spec:
+  selector:
+    app: gitlab-reviewer
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP
+---
+
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: gitlab-reviewer
+spec:
+  to:
+    kind: Service
+    name: gitlab-reviewer
+  port:
+    targetPort: 3000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
